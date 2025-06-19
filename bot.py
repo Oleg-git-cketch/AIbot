@@ -9,6 +9,17 @@ TELEGRAM_TOKEN = "7952352811:AAEqgtz9v94gFEWoFnLHiTEZYGI2Q7AJylQ"
 
 OPENROUTER_API_KEY = "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"  # твой OpenRouter API-ключ
 
+
+headers = {
+    "Authorization": "Bearer sk-or-...",
+    "Content-Type": "application/json"
+}
+
+r = requests.get("https://openrouter.ai/api/v1/models", headers=headers)
+print(r.status_code)
+print(r.text)
+
+
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 bot.remove_webhook()
 
