@@ -14,7 +14,7 @@ def menu_kb():
 def role_kb():
     kb = types.InlineKeyboardMarkup(row_width=3)
 
-    but1 = types.InlineKeyboardButton('Ассистент', callback_data='role_assistent')
+    but1 = types.InlineKeyboardButton('Ассистент', callback_data='role_assistant')
     but2 = types.InlineKeyboardButton('Учитель', callback_data='role_teacher')
     but3 = types.InlineKeyboardButton('Шутник', callback_data='role_shutnik')
 

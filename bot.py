@@ -5,9 +5,9 @@ import json
 import time
 from buttons import menu_kb, role_kb, model_kb
 
-TELEGRAM_TOKEN = "8076429427:AAGTg5v3q2iGvITebSaX8SgdrMVvPaJDOOo"
+TELEGRAM_TOKEN = "7952352811:AAEqgtz9v94gFEWoFnLHiTEZYGI2Q7AJylQ"
 
-OPENROUTER_API_KEY = "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"  # твой OpenRouter API-ключ
+OPENROUTER_API_KEY = "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"  # твой OpenRouter API-ключ
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 bot.remove_webhook()
@@ -84,7 +84,7 @@ def start_ai(call):
     prompt = "Привет! Что ты умеешь?"
     user_id = call.from_user.id
     username = call.from_user.username
-    role = user_roles.get(user_id, "assistent")
+    role = user_roles.get(user_id, "assistant")
     model = user_model.get(user_id, "openai/gpt-4o")
 
     ask_ai(call.message.chat.id, prompt, call.message, role, model)
