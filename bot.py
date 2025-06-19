@@ -6,19 +6,7 @@ import time
 from buttons import menu_kb, role_kb, model_kb
 
 TELEGRAM_TOKEN = "7952352811:AAEqgtz9v94gFEWoFnLHiTEZYGI2Q7AJylQ"
-
-OPENROUTER_API_KEY = "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"  # твой OpenRouter API-ключ
-
-
-headers = {
-    "Authorization": "Bearer sk-or-...",
-    "Content-Type": "application/json"
-}
-
-r = requests.get("https://openrouter.ai/api/v1/models", headers=headers)
-print(r.status_code)
-print(r.text)
-
+OPENROUTER_API_KEY = "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"
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 bot.remove_webhook()
@@ -26,6 +14,7 @@ bot.remove_webhook()
 user_roles = {}
 user_model = {}
 
+# Логгирование ошибок
 logging.basicConfig(
     level=logging.INFO,
     filename='bot_errors.log',
@@ -36,8 +25,7 @@ logging.basicConfig(
 @bot.message_handler(commands=['start'])
 def start(message):
     user_id = message.from_user.id
-
-    bot.send_message(user_id, "👋 Добро пожаловать!\n\nПожалуйста, выберите пункт меню или напишите любое сообщение в чат чтобы начать общатся с ИИ:", reply_markup=menu_kb())
+    bot.send_message(user_id, "👋 Добро пожаловать!\n\nПожалуйста, выберите пункт меню или напишите любое сообщение в чат чтобы начать общаться с ИИ:", reply_markup=menu_kb())
 
 @bot.message_handler(commands=['role'])
 def role_command(message):
@@ -47,19 +35,16 @@ def role_command(message):
 @bot.message_handler(commands=['model'])
 def model_command(message):
     user_id = message.from_user.id
-
     bot.send_message(user_id, '🤖 Выберите модель ИИ, с которой хотите общаться:', reply_markup=model_kb())
 
 @bot.callback_query_handler(func=lambda call: call.data == "roles")
 def role(call):
     user_id = call.from_user.id
-
     bot.send_message(user_id, '🧠 Выберите роль, в которой бот будет отвечать:', reply_markup=role_kb())
 
 @bot.callback_query_handler(func=lambda call: call.data == "model")
 def model(call):
     user_id = call.from_user.id
-
     bot.send_message(user_id, '🤖 Выберите модель ИИ, с которой хотите общаться:', reply_markup=model_kb())
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('model_'))
@@ -72,21 +57,16 @@ def set_model(call):
         "model_gemini": "google/gemini-2.5-flash-preview-05-20"
     }
 
-    selected_model_key = call.data
-    model_id = model_map.get(selected_model_key, "openai/gpt-4o")  # по умолчанию GPT-4o
-
+    model_id = model_map.get(call.data, "openai/gpt-4o")  # по умолчанию GPT-4o
     user_model[user_id] = model_id
-    print(user_model)
 
     bot.send_message(user_id, f'✅ Модель успешно выбрана: {model_id}\nТеперь напишите сообщение')
-
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('role_'))
 def set_role(call):
     role = call.data.replace('role_', '')
     user_id = call.from_user.id
     user_roles[user_id] = role
-    print(user_roles)
 
     bot.send_message(user_id, f"🎭 Роль установлена: {role}\nТеперь напишите сообщение.")
 
@@ -94,48 +74,30 @@ def set_role(call):
 def start_ai(call):
     prompt = "Привет! Что ты умеешь?"
     user_id = call.from_user.id
-    username = call.from_user.username
     role = user_roles.get(user_id, "assistant")
     model = user_model.get(user_id, "openai/gpt-4o")
 
     ask_ai(call.message.chat.id, prompt, call.message, role, model)
-
 
 @bot.message_handler(func=lambda message: True)
 def handle_message(message):
     prompt = message.text
     user_id = message.from_user.id
     role = user_roles.get(user_id, 'assistant')
-    model = user_model.get(user_id, 'openai/gpt-4o')  # значение по умолчанию
+    model = user_model.get(user_id, 'openai/gpt-4o')
     ask_ai(message.chat.id, prompt, message, role, model)
-
-
 
 def ask_ai(chat_id, prompt, message, role, model):
     user_id = message.from_user.id
+    username = message.from_user.username
 
-    headers = {
-        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-        "Content-Type": "application/json"
+    system_roles = {
+        'assistant': f"Ты дружелюбный помощник, который кратко и вежливо отвечает на вопросы. Имя пользователя {username}",
+        'teacher': f"Ты строгий, умный преподаватель, объясняющий всё подробно и с примерами. Имя пользователя {username}",
+        'shutnik': f"Ты весёлый бот, который на всё отвечает с юмором и шутками. Имя пользователя {username}"
     }
 
-    if role == 'assistent':
-        system_msg = f"Ты дружелюбный помощник, который кратко и вежливо отвечает на вопросы. Имя пользователя {message.from_user.username}"
-    elif role == 'teacher':
-        system_msg = f"Ты строгий, умный преподаватель, объясняющий всё подробно и с примерами. Имя пользователя {message.from_user.username}"
-    elif role == 'shutnik':
-        system_msg = f"Ты весёлый бот, который на всё отвечает с юмором и шутками. Имя пользователя {message.from_user.username}"
-    else:
-        system_msg = f"Ты просто помощник. Имя пользователя {message.from_user.username}"
-
-    if model == 'model_gpt4o':
-        model = user_model.get(user_id, 'openai/gpt-4o')
-    elif model == 'model_deepseek':
-        model = user_model.get(user_id, 'deepseek-ai/deepseek-chat')
-    elif model == 'model_gemini':
-        model = user_model.get(user_id, 'fireworks/phi-2')
-    else:
-        model = user_model.get(user_id, 'openai/gpt-4o')
+    system_msg = system_roles.get(role, f"Ты просто помощник. Имя пользователя {username}")
 
     data = {
         "model": model,
@@ -146,6 +108,11 @@ def ask_ai(chat_id, prompt, message, role, model):
         ]
     }
 
+    headers = {
+        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+        "Content-Type": "application/json"
+    }
+
     try:
         response = requests.post(
             "https://openrouter.ai/api/v1/chat/completions",
@@ -153,22 +120,20 @@ def ask_ai(chat_id, prompt, message, role, model):
             data=json.dumps(data),
             timeout=20
         )
+        response.raise_for_status()
+        reply = response.json()['choices'][0]['message']['content']
     except requests.exceptions.RequestException as e:
         logging.exception(f"[API ERROR] Ошибка соединения с OpenRouter для user_id {user_id}: {e}")
         bot.send_message(chat_id, f"❌ Ошибка при соединении с ИИ. Попробуйте позже.")
         return
-
-    if response.status_code == 200:
-        reply = response.json()['choices'][0]['message']['content']
-    else:
-        logging.error(f"[API ERROR] Status {response.status_code} от OpenRouter для user_id {user_id} — {response.text}")
-        reply = f"⚠️ Ошибка от ИИ: {response.status_code}. Попробуйте позже."
+    except Exception as e:
+        logging.exception(f"[PARSE ERROR] Ошибка обработки ответа: {e}")
+        reply = "⚠️ Произошла ошибка при обработке ответа от ИИ."
 
     try:
         bot.send_message(chat_id, reply)
     except Exception as e:
         logging.exception(f"[SEND ERROR] Не удалось отправить сообщение пользователю {user_id}: {e}")
-
 
 if __name__ == '__main__':
     while True:
