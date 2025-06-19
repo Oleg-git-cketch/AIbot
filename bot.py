@@ -5,9 +5,9 @@ import json
 import time
 from buttons import menu_kb, role_kb, model_kb
 
-TELEGRAM_TOKEN = "7750734085:AAE4ezbZYWqDczqUujLntkV7H7HBI6nGjII"
+TELEGRAM_TOKEN = "8076429427:AAGTg5v3q2iGvITebSaX8SgdrMVvPaJDOOo"
 
-OPENROUTER_API_KEY = "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"  # твой OpenRouter API-ключ
+OPENROUTER_API_KEY = "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"  # твой OpenRouter API-ключ
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 bot.remove_webhook()
