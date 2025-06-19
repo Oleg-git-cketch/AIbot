@@ -6,7 +6,7 @@ import time
 from buttons import menu_kb, role_kb, model_kb
 
 TELEGRAM_TOKEN = "7952352811:AAEqgtz9v94gFEWoFnLHiTEZYGI2Q7AJylQ"
-OPENROUTER_API_KEY = "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"
+OPENROUTER_API_KEY = "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"
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 bot.remove_webhook()
